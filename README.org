@@ -1,0 +1,12 @@
+* Install setup
+#+begin_src bash
+#!/bin/bash
+git clone git@github.com:dzaima/CBQN.git
+cd CBQN/
+make clean
+make o3n CC=clang CXX=clang++ FFI=0
+#+end_src
+* Run BQN
+#+begin_src bash
+  ./BQN hello.bqn
+#+end_src
