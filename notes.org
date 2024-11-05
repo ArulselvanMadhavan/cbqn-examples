@@ -1,0 +1,30 @@
+* Toposim utilities
+#+begin_src bqn
+Mat ← ⥊⟜(↕×´)
+Enumerate ← (∾⌜)´∘(↕¨)
+
+BuildConn ← ⋈⌜˜⥊
+Last ← ¯1⊸⊑
+DimMultFactors ← (⊏»×`)⌾⌽
+dims ← 4‿4‿5
+dims_enum ← ⥊Enumerate dims
+switches ← Mat dims
+conns ← BuildConn switches
+mdims ← DimMultFactors dims
+GenNeighbors ← {𝕊𝕩:
+  dim_id ← 𝕩
+  InsertDim ← {𝕨𝕊𝕩:
+    𝕩⌾(𝕨⊸⊑) dim_id
+  }
+  GenDimExclude ← /∘≠⟜↕
+  DimVariants ← {𝕊𝕩:
+    dim_idx ← 𝕩
+    dim_len‿dim_val ← dim_idx⊸⊑¨ dims‿dim_id
+    d3 ← dim_val GenDimExclude dim_len
+    dim_idx InsertDim¨ d3
+  }
+  ∾DimVariants¨↕≠dims
+}
+IdToDim ← ⊑∘(/⟜dims_enum)∘(⥊∘⍷˜)
+•Show switches IdToDim 12
+#+end_src
