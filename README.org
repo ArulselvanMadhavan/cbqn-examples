@@ -10,6 +10,5 @@ make o3n CC=clang CXX=clang++ FFI=0
 #+begin_src bash
   ./BQN hello.bqn
 #+end_src
-* Combinators
-** S combinator aka 2-train
-** Phi combinator aka 3-train or fork
+* Numpy serialization
+- BQN array to numpy serialization code was taken verbatim from https://github.com/dlozeve/bqn-npy/tree/main
