@@ -5,9 +5,30 @@ ctrlPtX ← 100
 ctrlPtY ← 100
 dims ← 7‿7
 nd ← ≠dims
+nsize ← ×´dims
+mat ← nsize‿nsize
 dims_xy ← dims ∾ 2
+
+axisRots ← ((↕≠dims)⊸(⌽˜))¨ ↕≠dims
+revRots ← (((↕nd)⊸(⌽˜))∘(¯1⊸×))¨ ↕nd
+
 grid←spacing + (rec+spacing)×>⥊↕dims
 r.window.SetSize 0.5
+
+InitMat ← {1⌾(𝕩⊸⊑) 𝕨⥊0}
+
+GenRot ← {𝕨𝕊𝕩:
+    rots ← ¯1↓1+↕≠𝕩
+    (𝕨⊸(⌽˜))˘ rots
+}
+
+# Generate step table
+vars ← (dims⊸InitMat)¨ ↕dims
+GenStageRots ← {(GenRot˜∘(𝕩⊸(⍉˜)))¨ axisRots}
+# num_switches_m x stage_count_m x rots_per_stage_l x mat
+rot_res ← >GenStageRots¨ ⥊vars
+RevRot ← {(𝕨⊸⍉)˘ 𝕩}
+rev_res ← {(revRots {𝕨 {RevRot}¨ 𝕩}˘ 𝕩)}˘ rot_res
 
 AddCtrlPts ←{dim_id𝕊[x1‿y1⋄x2‿y2]:
   ctrlOffsets ← [[(5÷ctrlPtX)‿0, (¯1×ctrlPtX)‿0], [(0‿(5 ÷ ctrlPtY)), (0‿(¯1×ctrlPtY))]]
@@ -37,7 +58,6 @@ PerFrame ← {𝕤
     {white r.draw.EllipseOutline 𝕩}˘ ellipseGrid
     midpts ← ÷⟜2∘+˝⎉2 ellipseGrid
     midpts_xy ← dims_xy ⥊ midpts
-    axisRots ← ((↕≠dims)⊸(⌽˜))¨ ↕≠dims
     offsets ← (GenOff∘(midptsxy⊸(⍉˜)))¨ axisRots
     # offsets - dims x rots_per_dim x dim_1 x dim_n x 2
     flags ← (⌽∘↕nd) {(𝕨⊸⊑∘<˝⎉2)¨𝕩}¨ offsets
@@ -45,6 +65,9 @@ PerFrame ← {𝕤
     curves ← flags (/˘)¨¨ offsets
     curvePts ← (↕nd) {𝕨⊸AddCtrlPts˘˘¨ 𝕩}¨ curves
     {red DrawBezier 𝕩}˘˘¨¨ curvePts
+
 } r.draw._withCanvas⟜black
 
 PerFrame•_While_(¬r.window.ShouldClose)r.window._openAs "HyperX"
+
+•Show rev_res
