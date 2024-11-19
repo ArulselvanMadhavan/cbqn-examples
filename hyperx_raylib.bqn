@@ -28,7 +28,44 @@ GenStageRots ← {(GenRot˜∘(𝕩⊸(⍉˜)))¨ axisRots}
 # num_switches_m x stage_count_m x rots_per_stage_l x mat
 rot_res ← >GenStageRots¨ ⥊vars
 RevRot ← {(𝕨⊸⍉)˘ 𝕩}
-rev_res ← {(revRots {𝕨 {RevRot}¨ 𝕩}˘ 𝕩)}˘ rot_res
+hop_table ← {(revRots {𝕨 {RevRot}¨ 𝕩}˘ 𝕩)}˘ rot_res
+data ← (10⊸+)∘>∘(dims⊸⥊¨) ↕nsize
+out_t ← +˝ data
+
+Flip ← {
+    HasFlag ← ((0⊸<)∘+´∘⥊)
+    MaybeFlip ← HasFlag◶⟨⊢,¬⟩
+    IsFlippable ← (0⊸<)∘(≠≢)
+    Fn ← IsFlippable◶⟨⊢,MaybeFlip⟩
+    Fn 𝕩
+}
+
+pkt_flags ← {(Flip⎉(𝕩))¨ vars}¨ (⌽↕nd)
+dd ← >⋈⎉¯1 data
+hop_reduce ← ⍉hop_table
+
+HopRdc ← {𝕨𝕊hop_id:
+hop_d ← hop_id ⊏ hop_reduce
+pkt_d ← ⥊∘>(hop_id ⊏ pkt_flags)
+data ← >𝕨
+ldata ← (¯1⊸⊏)˘ 𝕨
+SwRdc ← {sw_id𝕊𝕩:
+    sw_d ← (sw_id ⊏ ldata)
+    pkt_f ← ⊑(sw_id ⊏ pkt_d)
+    sw_f ← ⊑(sw_id ⊏ ⥊vars)
+    StepRdc ← {
+        pkt_f ← (sw_f ≡ pkt_f)⊑(pkt_f‿(pkt_f≠pkt_f))
+        hop_d ← ⊑(⥊𝕩) / (<˘ ldata)
+        pkt_d ← ×⟜hop_d¨ sw_f‿pkt_f
+        +´ (⋈𝕨)∾pkt_d
+    }
+    outstep ← (<˘ sw_d) StepRdc` (⋈˘ 𝕩)
+    ∾˘outstep
+ }
+ (↕(≢hop_d)) SwRdc˘ (>hop_d)
+}
+
+out_s ← (⋈ dd) HopRdc` (⋈˘ (↕(≠hop_reduce)))
 
 AddCtrlPts ←{dim_id𝕊[x1‿y1⋄x2‿y2]:
   ctrlOffsets ← [[(5÷ctrlPtX)‿0, (¯1×ctrlPtX)‿0], [(0‿(5 ÷ ctrlPtY)), (0‿(¯1×ctrlPtY))]]
@@ -69,5 +106,3 @@ PerFrame ← {𝕤
 } r.draw._withCanvas⟜black
 
 PerFrame•_While_(¬r.window.ShouldClose)r.window._openAs "HyperX"
-
-•Show rev_res
