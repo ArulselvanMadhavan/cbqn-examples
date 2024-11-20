@@ -3,16 +3,29 @@ rec←20
 spacing ← 70
 ctrlPtX ← 100
 ctrlPtY ← 100
-dims ← 7‿7
+dims ← 3‿4
 nd ← ≠dims
 nsize ← ×´dims
 mat ← nsize‿nsize
 dims_xy ← dims ∾ 2
+data ← (10⊸+)∘>∘(dims⊸⥊¨) ↕nsize
+out_t ← +˝ data
 
 axisRots ← ((↕≠dims)⊸(⌽˜))¨ ↕≠dims
 revRots ← (((↕nd)⊸(⌽˜))∘(¯1⊸×))¨ ↕nd
 
 grid←spacing + (rec+spacing)×>⥊↕dims
+max_x‿max_y ← ⌈˝grid
+min_x‿min_y ← ⌊˝grid
+out_start ← (spacing + max_x)‿min_y
+out_wid ← 3×rec
+out_spacing ← (out_wid‿out_wid)
+out_tl ← out_start⊸+˘out_wid×>⥊↕dims
+out_lines ← (∾⟜out_spacing)˘ out_tl
+out_br ← (out_wid⊸+)⎉¯1 out_tl
+out_rect ← out_tl ≍˘ out_br
+text_pos ← <∘(((÷⟜3)¨out_spacing)⊸+)∘⊏˘out_rect
+out_txt ← text_pos ∾˘ (•Fmt¨ (⥊out_t))
 r.window.SetSize 0.5
 
 InitMat ← {1⌾(𝕩⊸⊑) 𝕨⥊0}
@@ -29,8 +42,6 @@ GenStageRots ← {(GenRot˜∘(𝕩⊸(⍉˜)))¨ axisRots}
 rot_res ← >GenStageRots¨ ⥊vars
 RevRot ← {(𝕨⊸⍉)˘ 𝕩}
 hop_table ← {(revRots {𝕨 {RevRot}¨ 𝕩}˘ 𝕩)}˘ rot_res
-data ← (10⊸+)∘>∘(dims⊸⥊¨) ↕nsize
-out_t ← +˝ data
 
 Flip ← {
     HasFlag ← ((0⊸<)∘+´∘⥊)
@@ -45,24 +56,24 @@ dd ← >⋈⎉¯1 data
 hop_reduce ← ⍉hop_table
 
 HopRdc ← {𝕨𝕊hop_id:
-hop_d ← hop_id ⊏ hop_reduce
-pkt_d ← ⥊∘>(hop_id ⊏ pkt_flags)
-data ← >𝕨
-ldata ← (¯1⊸⊏)˘ 𝕨
-SwRdc ← {sw_id𝕊𝕩:
-    sw_d ← (sw_id ⊏ ldata)
-    pkt_f ← ⊑(sw_id ⊏ pkt_d)
-    sw_f ← ⊑(sw_id ⊏ ⥊vars)
-    StepRdc ← {
-        pkt_f ← (sw_f ≡ pkt_f)⊑(pkt_f‿(pkt_f≠pkt_f))
-        hop_d ← ⊑(⥊𝕩) / (<˘ ldata)
-        pkt_d ← ×⟜hop_d¨ sw_f‿pkt_f
-        +´ (⋈𝕨)∾pkt_d
-    }
-    outstep ← (<˘ sw_d) StepRdc` (⋈˘ 𝕩)
-    ∾˘outstep
- }
- (↕(≢hop_d)) SwRdc˘ (>hop_d)
+    hop_d ← hop_id ⊏ hop_reduce
+    pkt_d ← ⥊∘>(hop_id ⊏ pkt_flags)
+    data ← >𝕨
+    ldata ← (¯1⊸⊏)˘ 𝕨
+    SwRdc ← {sw_id𝕊𝕩:
+        sw_d ← (sw_id ⊏ ldata)
+        pkt_f ← ⊑(sw_id ⊏ pkt_d)
+        sw_f ← ⊑(sw_id ⊏ ⥊vars)
+        StepRdc ← {
+            pkt_f ← (sw_f ≡ pkt_f)⊑(pkt_f‿(pkt_f≠pkt_f))
+            hop_d ← ⊑(⥊𝕩) / (<˘ ldata)
+            pkt_d ← ×⟜hop_d¨ sw_f‿pkt_f
+            +´ (⋈𝕨)∾pkt_d
+        }
+        outstep ← (<˘ sw_d) StepRdc` (⋈˘ 𝕩)
+        ∾˘outstep
+     }
+     (↕(≢hop_d)) SwRdc˘ (>hop_d)
 }
 
 out_s ← (⋈ dd) HopRdc` (⋈˘ (↕(≠hop_reduce)))
@@ -82,6 +93,11 @@ DrawBezier ← {r‿g‿b‿a𝕊pts:
     raylib.DrawSplineBezierCubic args
 }⎉1‿2
 
+DrawRectangleLines ← {r‿g‿b‿a𝕊x‿y‿wx‿wy:
+   raylib.DrawRectangleLines⟨x, y, wx, wy, r‿g‿b‿a⟩
+   #raylib.DrawRectangleLines 𝕨∾⟜<˜(⌈∾⊢-⊏∘𝕩)(+˝÷≠)𝕩
+}⎉1‿2
+
 GenOff ← {𝕊𝕩:
       midtp ← 𝕩
       lastDim ← 1↓↕(¯2⊸⊑≢) midtp
@@ -89,20 +105,22 @@ GenOff ← {𝕊𝕩:
       {midtp ≍⎉1 𝕩}¨ rotations
   }
 
+fontSize ← 20
 PerFrame ← {𝕤
     pos ← r.mouse.GetPos@
     ellipseGrid ← {≍⟜(+⟜rec)}˘ grid
     {white r.draw.EllipseOutline 𝕩}˘ ellipseGrid
+    #{white r.draw.Rectangle 𝕩}˘ out_rect
+    font ← r.font.LoadRaylib@
+    {white DrawRectangleLines 𝕩}˘ out_lines
+    {white‿font‿fontSize r.draw.Text 𝕩}˘ out_txt
     midpts ← ÷⟜2∘+˝⎉2 ellipseGrid
     midpts_xy ← dims_xy ⥊ midpts
     offsets ← (GenOff∘(midptsxy⊸(⍉˜)))¨ axisRots
-    # offsets - dims x rots_per_dim x dim_1 x dim_n x 2
     flags ← (⌽∘↕nd) {(𝕨⊸⊑∘<˝⎉2)¨𝕩}¨ offsets
-    # flags - dims x rots_per_dim x dim_1 x dim_2
     curves ← flags (/˘)¨¨ offsets
     curvePts ← (↕nd) {𝕨⊸AddCtrlPts˘˘¨ 𝕩}¨ curves
     {red DrawBezier 𝕩}˘˘¨¨ curvePts
-
 } r.draw._withCanvas⟜black
 
 PerFrame•_While_(¬r.window.ShouldClose)r.window._openAs "HyperX"
