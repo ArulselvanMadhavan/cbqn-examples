@@ -3,7 +3,7 @@ rec←20
 spacing ← 70
 ctrlPtX ← 100
 ctrlPtY ← 100
-dims ← 3‿4
+dims ← 5‿4
 nd ← ≠dims
 nsize ← ×´dims
 mat ← nsize‿nsize
@@ -51,32 +51,49 @@ Flip ← {
     Fn 𝕩
 }
 
-pkt_flags ← {(Flip⎉(𝕩))¨ vars}¨ (⌽↕nd)
-dd ← >⋈⎉¯1 data
 hop_reduce ← ⍉hop_table
+reduce_flags ← {(Flip⎉(𝕩))¨ vars}¨ (⌽↕nd)
+rcomb ← hop_reduce {𝕨 {(⋈⟜𝕩)˘ 𝕨}¨ (⥊>𝕩)}˘ reduce_flags
+hop_gather ← ⌽hop_reduce
+gather_flags ← (↕nd) {(𝕨⊸{Flip⎉𝕨 𝕩})¨ 𝕩}˘ hop_gather
+gcomb ← (hop_gather (⋈)˘¨˘ gather_flags)
 
-HopRdc ← {𝕨𝕊hop_id:
-    hop_d ← hop_id ⊏ hop_reduce
-    pkt_d ← ⥊∘>(hop_id ⊏ pkt_flags)
-    data ← >𝕨
-    ldata ← (¯1⊸⊏)˘ 𝕨
-    SwRdc ← {sw_id𝕊𝕩:
-        sw_d ← (sw_id ⊏ ldata)
-        pkt_f ← ⊑(sw_id ⊏ pkt_d)
-        sw_f ← ⊑(sw_id ⊏ ⥊vars)
-        StepRdc ← {
-            pkt_f ← (sw_f ≡ pkt_f)⊑(pkt_f‿(pkt_f≠pkt_f))
-            hop_d ← ⊑(⥊𝕩) / (<˘ ldata)
-            pkt_d ← ×⟜hop_d¨ sw_f‿pkt_f
-            +´ (⋈𝕨)∾pkt_d
-        }
-        outstep ← (<˘ sw_d) StepRdc` (⋈˘ 𝕩)
-        ∾˘outstep
-     }
-     (↕(≢hop_d)) SwRdc˘ (>hop_d)
+dd ← >⋈⎉¯1 data
+
+Wrapper ← {𝕊dd‿comb:
+MkHop ← {𝕨𝕊hop_id:
+  hop_d ← hop_id ⊏ comb
+  data ← >𝕨
+  ldata ← (¯1⊸⊏)˘ 𝕨
+  SwRdc ← {sw_id𝕊𝕩:
+    sw_d ← (sw_id ⊏ ldata)
+    sw_f ← ⊑(sw_id ⊏ ⥊vars)
+    Reduce ← {𝕨𝕊hop_f‿pkt_f:
+      pkt_f2 ← (sw_f ≡ pkt_f)⊑(pkt_f‿(pkt_f≠pkt_f))
+      hop_d ← ⊑(⥊hop_f) / (<˘ ldata)
+      pkt_d ← ×⟜hop_d¨ sw_f‿pkt_f2
+      +´ (⋈𝕨)∾pkt_d
+    }
+    Gather ← {𝕨𝕊hop_f‿pkt_f:
+      hop_d ← ⊑(⥊hop_f) / (<˘ ldata)
+      hol_f ← hop_f ∨ pkt_f
+      pkt_holes ← hop_d×hol_f
+      sw_holes ← ((¬hol_f)⊸×) 𝕨
+      +´ sw_holes‿pkt_holes
+    }
+    flag2 ← ⌊⊑hop_id÷nd
+    fn ← flag2⊑Reduce‿Gather
+    outstep ← (<˘ sw_d) fn` (⋈˘ 𝕩)
+    ∾˘outstep
+  }
+ (↕(≢hop_d)) SwRdc˘ (>hop_d)
+}
+out_r ← (⋈ dd) MkHop` (⋈˘ (↕(≠comb)))
 }
 
-out_s ← (⋈ dd) HopRdc` (⋈˘ (↕(≠hop_reduce)))
+rgcomb ← rcomb∾gcomb
+out_r ← Wrapper dd‿rgcomb
+#gg ← (≍∘¯1⊸⊏)˘ (⊑¯1⊏out_r)
 
 AddCtrlPts ←{dim_id𝕊[x1‿y1⋄x2‿y2]:
   ctrlOffsets ← [[(5÷ctrlPtX)‿0, (¯1×ctrlPtX)‿0], [(0‿(5 ÷ ctrlPtY)), (0‿(¯1×ctrlPtY))]]
