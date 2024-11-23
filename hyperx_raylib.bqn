@@ -3,7 +3,7 @@ rec←20
 spacing ← 70
 ctrlPtX ← 100
 ctrlPtY ← 100
-dims ← 5‿4
+dims ← 3‿4
 nd ← ≠dims
 nsize ← ×´dims
 mat ← nsize‿nsize
@@ -15,6 +15,9 @@ axisRots ← ((↕≠dims)⊸(⌽˜))¨ ↕≠dims
 revRots ← (((↕nd)⊸(⌽˜))∘(¯1⊸×))¨ ↕nd
 
 grid←spacing + (rec+spacing)×>⥊↕dims
+ellipseGrid ← {≍⟜(+⟜rec)}˘ grid
+midpts ← (÷⟜2)+˝˘ellipseGrid
+midpts_xy ← dims_xy ⥊ midpts
 max_x‿max_y ← ⌈˝grid
 min_x‿min_y ← ⌊˝grid
 out_start ← (spacing + max_x)‿min_y
@@ -123,16 +126,15 @@ GenOff ← {𝕊𝕩:
   }
 
 fontSize ← 20
+clock ← r.StartClock@
+
 PerFrame ← {𝕤
+    •Show ⌈clock.Time@
     pos ← r.mouse.GetPos@
-    ellipseGrid ← {≍⟜(+⟜rec)}˘ grid
     {white r.draw.EllipseOutline 𝕩}˘ ellipseGrid
-    #{white r.draw.Rectangle 𝕩}˘ out_rect
     font ← r.font.LoadRaylib@
     {white DrawRectangleLines 𝕩}˘ out_lines
     {white‿font‿fontSize r.draw.Text 𝕩}˘ out_txt
-    midpts ← ÷⟜2∘+˝⎉2 ellipseGrid
-    midpts_xy ← dims_xy ⥊ midpts
     offsets ← (GenOff∘(midptsxy⊸(⍉˜)))¨ axisRots
     flags ← (⌽∘↕nd) {(𝕨⊸⊑∘<˝⎉2)¨𝕩}¨ offsets
     curves ← flags (/˘)¨¨ offsets
