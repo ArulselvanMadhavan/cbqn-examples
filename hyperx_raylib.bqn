@@ -1,4 +1,5 @@
 ⟨⟨red, green, white, black⟩⇐color, raylib⟩←r←•Import "../rayed-bqn/rayed.bqn"
+secs_per_step ← 3
 rec←20
 spacing ← 70
 ctrlPtX ← 100
@@ -42,7 +43,7 @@ aout_tl ← MkGridPts aout_start
 aout_lines ← MkGridLines aout_tl
 aout_rect ← (aout_offset⊸+)˘˘ out_rect
 atext_pos ← MkTextPos aout_rect
-aout_txt ← atext_pos FmtTxt out_t
+
 r.window.SetSize 0.25
 
 InitMat ← {1⌾(𝕩⊸⊑) 𝕨⥊0}
@@ -110,6 +111,13 @@ out_r ← (⋈ dd) MkHop` (⋈˘ (↕(≠comb)))
 
 rgcomb ← rcomb∾gcomb
 out_r ← Wrapper dd‿rgcomb
+out_list ← ∾˝ out_r
+# num_sw x total_steps x mat
+out_steps ← {𝕨 ∾˘ (>𝕩)}´ out_list
+out_steps2 ← ((≍˘data) ∾˘ out_steps)
+total_steps ← 1⊑(≢out_steps2)
+duration ← (total_steps × secs_per_step)
+out_grouped ← (<⎉2 out_steps2)
 #gg ← (≍∘¯1⊸⊏)˘ (⊑¯1⊏out_r)
 
 AddCtrlPts ←{dim_id𝕊[x1‿y1⋄x2‿y2]:
@@ -144,13 +152,19 @@ clock ← r.StartClock@
 
 PerFrame ← {𝕤
     elapsedSecs ← ⌈clock.Time@
+    secs_idx ←  duration | elapsedSecs
+    step_idx ← ⌊(secs_idx ÷ secs_per_step)
+    sw_id ← 3
+
     pos ← r.mouse.GetPos@
     {white r.draw.EllipseOutline 𝕩}˘ ellipseGrid
     font ← r.font.LoadRaylib@
     {white DrawRectangleLines 𝕩}˘ out_lines
     {white DrawRectangleLines 𝕩}˘ aout_lines
     {white‿font‿fontSize r.draw.Text 𝕩}˘ out_txt
+    aout_txt ← atext_pos FmtTxt (sw_id‿step_idx ⊑ out_grouped)
     {white‿font‿fontSize r.draw.Text 𝕩}˘ aout_txt
+
     offsets ← (GenOff∘(midptsxy⊸(⍉˜)))¨ axisRots
     flags ← (⌽∘↕nd) {(𝕨⊸⊑∘<˝⎉2)¨𝕩}¨ offsets
     curves ← flags (/˘)¨¨ offsets
