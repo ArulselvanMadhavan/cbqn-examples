@@ -20,16 +20,30 @@ midpts ← (÷⟜2)+˝˘ellipseGrid
 midpts_xy ← dims_xy ⥊ midpts
 max_x‿max_y ← ⌈˝grid
 min_x‿min_y ← ⌊˝grid
+# display expected out
 out_start ← (spacing + max_x)‿min_y
 out_wid ← 3×rec
 out_spacing ← (out_wid‿out_wid)
-out_tl ← out_start⊸+˘out_wid×>⥊↕dims
-out_lines ← (∾⟜out_spacing)˘ out_tl
+MkGridPts ← {𝕩⊸+˘out_wid×>⥊↕dims}
+out_tl ← MkGridPts out_start
+MkGridLines ← (∾⟜out_spacing)˘
+out_lines ← MkGridLines out_tl
 out_br ← (out_wid⊸+)⎉¯1 out_tl
 out_rect ← out_tl ≍˘ out_br
-text_pos ← <∘(((÷⟜3)¨out_spacing)⊸+)∘⊏˘out_rect
-out_txt ← text_pos ∾˘ (•Fmt¨ (⥊out_t))
-r.window.SetSize 0.5
+MkTextPos ← <∘(((÷⟜3)¨out_spacing)⊸+)∘⊏˘
+text_pos ← MkTextPos out_rect
+FmtTxt ← {𝕨 ∾˘ (•Fmt¨ (⥊𝕩))}
+out_txt ← text_pos FmtTxt out_t
+
+out_max_x‿out_max_y ← ⌈˝out_br
+aout_offset ← (0‿(out_max_y))
+aout_start ← out_start + aout_offset
+aout_tl ← MkGridPts aout_start
+aout_lines ← MkGridLines aout_tl
+aout_rect ← (aout_offset⊸+)˘˘ out_rect
+atext_pos ← MkTextPos aout_rect
+aout_txt ← atext_pos FmtTxt out_t
+r.window.SetSize 0.25
 
 InitMat ← {1⌾(𝕩⊸⊑) 𝕨⥊0}
 
@@ -129,12 +143,14 @@ fontSize ← 20
 clock ← r.StartClock@
 
 PerFrame ← {𝕤
-    •Show ⌈clock.Time@
+    elapsedSecs ← ⌈clock.Time@
     pos ← r.mouse.GetPos@
     {white r.draw.EllipseOutline 𝕩}˘ ellipseGrid
     font ← r.font.LoadRaylib@
     {white DrawRectangleLines 𝕩}˘ out_lines
+    {white DrawRectangleLines 𝕩}˘ aout_lines
     {white‿font‿fontSize r.draw.Text 𝕩}˘ out_txt
+    {white‿font‿fontSize r.draw.Text 𝕩}˘ aout_txt
     offsets ← (GenOff∘(midptsxy⊸(⍉˜)))¨ axisRots
     flags ← (⌽∘↕nd) {(𝕨⊸⊑∘<˝⎉2)¨𝕩}¨ offsets
     curves ← flags (/˘)¨¨ offsets
