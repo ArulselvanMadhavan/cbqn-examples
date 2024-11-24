@@ -15,33 +15,34 @@ out_t ← +˝ data
 axisRots ← ((↕≠dims)⊸(⌽˜))¨ ↕≠dims
 revRots ← (((↕nd)⊸(⌽˜))∘(¯1⊸×))¨ ↕nd
 
-grid←spacing + (rec+spacing)×>⥊↕dims
+grid ← ⌽⎉1 (spacing + (rec+spacing)×>⥊↕dims)
 ellipseGrid ← {≍⟜(+⟜rec)}˘ grid
 midpts ← (÷⟜2)+˝˘ellipseGrid
 midpts_xy ← dims_xy ⥊ midpts
-max_x‿max_y ← ⌈˝grid
-min_x‿min_y ← ⌊˝grid
+
+max_y‿max_x ← ⌈˝grid
+min_y‿min_x ← ⌊˝grid
 # display expected out
-out_start ← (spacing + max_x)‿min_y
+out_start ← (min_y)‿(max_x + (3 × spacing))
 out_wid ← 3×rec
 out_spacing ← (out_wid‿out_wid)
-MkGridPts ← {𝕩⊸+˘out_wid×>⥊↕dims}
+MkGridPts ← {(⌽⎉1) (𝕩⊸+˘out_wid×>⥊↕dims)}
 out_tl ← MkGridPts out_start
 MkGridLines ← (∾⟜out_spacing)˘
 out_lines ← MkGridLines out_tl
 out_br ← (out_wid⊸+)⎉¯1 out_tl
 out_rect ← out_tl ≍˘ out_br
-MkTextPos ← <∘(((÷⟜3)¨out_spacing)⊸+)∘⊏˘
+MkTextPos ← <∘(((÷⟜3)¨ out_spacing)⊸+)∘⊏˘
 text_pos ← MkTextPos out_rect
 FmtTxt ← {𝕨 ∾˘ (•Fmt¨ (⥊𝕩))}
 out_txt ← text_pos FmtTxt out_t
 
-out_max_x‿out_max_y ← ⌈˝out_br
-aout_offset ← (0‿(out_max_y))
+out_max_y‿out_max_x ← ⌈˝out_br
+aout_offset ← out_max_x‿0
 aout_start ← out_start + aout_offset
 aout_tl ← MkGridPts aout_start
 aout_lines ← MkGridLines aout_tl
-aout_rect ← (aout_offset⊸+)˘˘ out_rect
+aout_rect ← ((⌽aout_offset)⊸+)˘˘ out_rect
 atext_pos ← MkTextPos aout_rect
 
 r.window.SetSize 0.25
@@ -60,6 +61,20 @@ GenStageRots ← {(GenRot˜∘(𝕩⊸(⍉˜)))¨ axisRots}
 rot_res ← >GenStageRots¨ ⥊vars
 RevRot ← {(𝕨⊸⍉)˘ 𝕩}
 hop_table ← {(revRots {𝕨 {RevRot}¨ 𝕩}˘ 𝕩)}˘ rot_res
+hop_sw ← {{{((⊐⟜1)∘⥊)⎉2 𝕩}¨𝕩}˘ 𝕩}˘ hop_table
+hop_comb ← ∾˘ hop_sw
+conn_mat ← (nsize↑/⁼)˘ hop_comb
+ut_mat ← <⌜˜↕nsize
+link_mat ← ut_mat ∧ conn_mat
+link_pts ← ≍⌜˜ <˘midpts
+ulinks ← (⥊link_mat) / (⥊link_pts)
+ctrlul ← ≍˘-40×((=˝)˘ (>ulinks))
+ul_split ← ((↕nd)⊸⊔)˘ >ulinks
+CtrlAdd ← {𝕩∾(𝕨+𝕩)}
+sctrls ← ctrlul CtrlAdd˘ (0⊑˘ ul_split)
+ectrls ← ctrlul (⌽CtrlAdd)˘ (1⊑˘ ul_split)
+curves_join ← (sctrls ∾˘ ectrls)
+curves ← (<(<˘))˘ curves_join
 
 Flip ← {
     HasFlag ← ((0⊸<)∘+´∘⥊)
@@ -120,32 +135,10 @@ duration ← (total_steps × secs_per_step)
 out_grouped ← (<⎉2 out_steps2)
 #gg ← (≍∘¯1⊸⊏)˘ (⊑¯1⊏out_r)
 
-AddCtrlPts ←{dim_id𝕊[x1‿y1⋄x2‿y2]:
-  ctrlOffsets ← [[(5÷ctrlPtX)‿0, (¯1×ctrlPtX)‿0], [(0‿(5 ÷ ctrlPtY)), (0‿(¯1×ctrlPtY))]]
-  ctrlOffset ← dim_id⊏ctrlOffsets
-  plus ← 0⊏ctrlOffset
-  sub ← 1⊏ctrlOffset
-  res ← (∾⟜((+⟜plus)≍(sub⊸+)))˘ 𝕩
-  # Convert mxnxk - (mxn)xk and then convert rank 2 array to list of lists
-  <⥊∘(⋈⎉(¯1))∘∾⋈⎉¯1 res
-}
-
-DrawBezier ← {r‿g‿b‿a𝕊pts:
-    args ← pts∾4∾2.0⋈𝕨
-    raylib.DrawSplineBezierCubic args
-}⎉1‿2
-
 DrawRectangleLines ← {r‿g‿b‿a𝕊x‿y‿wx‿wy:
    raylib.DrawRectangleLines⟨x, y, wx, wy, r‿g‿b‿a⟩
    #raylib.DrawRectangleLines 𝕨∾⟜<˜(⌈∾⊢-⊏∘𝕩)(+˝÷≠)𝕩
 }⎉1‿2
-
-GenOff ← {𝕊𝕩:
-      midtp ← 𝕩
-      lastDim ← 1↓↕(¯2⊸⊑≢) midtp
-      rotations ← {(𝕩⊸⌽)⎉2 midtp}¨ lastDim
-      {midtp ≍⎉1 𝕩}¨ rotations
-  }
 
 fontSize ← 20
 clock ← r.StartClock@
@@ -164,12 +157,7 @@ PerFrame ← {𝕤
     {white‿font‿fontSize r.draw.Text 𝕩}˘ out_txt
     aout_txt ← atext_pos FmtTxt (sw_id‿step_idx ⊑ out_grouped)
     {white‿font‿fontSize r.draw.Text 𝕩}˘ aout_txt
-
-    offsets ← (GenOff∘(midptsxy⊸(⍉˜)))¨ axisRots
-    flags ← (⌽∘↕nd) {(𝕨⊸⊑∘<˝⎉2)¨𝕩}¨ offsets
-    curves ← flags (/˘)¨¨ offsets
-    curvePts ← (↕nd) {𝕨⊸AddCtrlPts˘˘¨ 𝕩}¨ curves
-    {red DrawBezier 𝕩}˘˘¨¨ curvePts
+    {raylib.DrawSplineBezierCubic 𝕩∾4∾2.0⋈red}˘ curves
 } r.draw._withCanvas⟜black
 
 PerFrame•_While_(¬r.window.ShouldClose)r.window._openAs "HyperX"
