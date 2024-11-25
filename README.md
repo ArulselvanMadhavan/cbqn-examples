@@ -29,7 +29,7 @@
 
 # Demo
 
-[![Watch the video](![img](https://raw.githubusercontent.com/ArulselvanMadhavan/cclviz/main/media/all_reduce_thumbnail.png))](<https://raw.githubusercontent.com/ArulselvanMadhavan/cclviz/main/media/all_reduce_viz_4x5.mov>)
+[![Watch the video](![img](https://raw.githubusercontent.com/ArulselvanMadhavan/cclviz/main/media/all_reduce_thumbnail.png))](https://raw.githubusercontent.com/ArulselvanMadhavan/cclviz/main/media/all_reduce_viz_4x5.mov)
 
 
 <a id="org51ed815"></a>
