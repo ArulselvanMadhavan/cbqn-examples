@@ -16,5 +16,10 @@ make o3n CC=clang CXX=clang++ FFI=0
 * Demo
 #+CAPTION: Watch demo of all-reduce in a 2D hyperX
 [[./media/output.gif]]
-* Numpy serialization
-- BQN array to numpy serialization code was taken verbatim from https://github.com/dlozeve/bqn-npy/tree/main
+
+* Acknowledgements
+This project uses
+1. [[https://github.com/mlochbaum/BQN][BQN]] by [[https://github.com/mlochbaum][Marshall Lochbaum]]
+2. [[https://github.com/dzaima/CBQN][CBQN]] - https://github.com/dzaima
+3. [[https://github.com/Brian-ED/rayed-bqn][rayed-bqn]] - [[https://github.com/Brian-ED][Brian E]]
+4. [[https://github.com/dlozeve/bqn-npy][bqn-npy]] - [[https://github.com/dlozeve][Dimitri Lozeve]]
