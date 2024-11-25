@@ -4,12 +4,14 @@ rec←20
 spacing ← 70
 ctrlPtX ← 100
 ctrlPtY ← 100
-dims ← 3‿4
+dims ← 5‿6
 nd ← ≠dims
 nsize ← ×´dims
 mat ← nsize‿nsize
 dims_xy ← dims ∾ 2
-data ← (10⊸+)∘>∘(dims⊸⥊¨) ↕nsize
+#data ← (10⊸+)∘>∘(dims⊸⥊¨) ↕nsize
+MkData ← •rand.Range˜
+data ← ⥊⟜(MkData+´) nsize∾dims
 out_t ← +˝ data
 
 axisRots ← ((↕≠dims)⊸(⌽˜))¨ ↕≠dims
@@ -22,6 +24,7 @@ midpts_xy ← dims_xy ⥊ midpts
 
 max_y‿max_x ← ⌈˝grid
 min_y‿min_x ← ⌊˝grid
+
 # display expected out
 out_start ← (min_y)‿(max_x + (3 × spacing))
 out_wid ← 3×rec
@@ -38,8 +41,10 @@ FmtTxt ← {𝕨 ∾˘ (•Fmt¨ (⥊𝕩))}
 out_txt ← text_pos FmtTxt out_t
 
 out_max_y‿out_max_x ← ⌈˝out_br
+
 aout_offset ← out_max_x‿0
 aout_start ← out_start + aout_offset
+
 aout_tl ← MkGridPts aout_start
 aout_lines ← MkGridLines aout_tl
 aout_rect ← ((⌽aout_offset)⊸+)˘˘ out_rect
@@ -70,7 +75,7 @@ ut_mat ← <⌜˜↕nsize
 link_mat ← ut_mat ∧ conn_mat
 link_pts ← ≍⌜˜ <˘midpts
 ulinks ← (⥊link_mat) / (⥊link_pts)
-ctrlul ← ≍˘-40×((=˝)˘ (>ulinks))
+ctrlul ← ≍˘-50×((=˝)˘ (>ulinks))
 ul_split ← ((↕nd)⊸⊔)˘ >ulinks
 CtrlAdd ← {𝕩∾(𝕨+𝕩)}
 sctrls ← ctrlul CtrlAdd˘ (0⊑˘ ul_split)
@@ -139,8 +144,7 @@ out_grouped ← (<⎉2 out_steps2)
 
 DrawRectangleLines ← {r‿g‿b‿a𝕊x‿y‿wx‿wy:
    raylib.DrawRectangleLines⟨x, y, wx, wy, r‿g‿b‿a⟩
-   #raylib.DrawRectangleLines 𝕨∾⟜<˜(⌈∾⊢-⊏∘𝕩)(+˝÷≠)𝕩
-}⎉1‿2
+ }⎉1‿2
 
 fontSize ← 20
 clock ← r.StartClock@
@@ -152,16 +156,22 @@ MkColors ←{sw_id𝕊step_sw:
     cout ← colors {3⌾(𝕨⊸⊑) 𝕩}´ ⟨sw_id‿step_sw, step_sw‿sw_id⟩
     (⊑⟜black‿red‿yellow‿green)¨ (⥊link_mat)/(⥊cout)
 }
+RandSw ← {𝕊𝕩:(𝕩 •rand.Range nsize)}
+sw_ids ← RandSw (2×nsize)
+
 PerFrame ← {𝕤
     elapsedSecs ← ⌈clock.Time@
     secs_idx ←  duration | elapsedSecs
     step_idx ← ⌊(secs_idx ÷ secs_per_step)
-    sw_id ← 3
+    sw_idx ← (≠sw_ids) | ⌊(elapsedSecs ÷ duration)
+    sw_id ← sw_idx ⊑ sw_ids
 
-    pos ← r.mouse.GetPos@
     {white r.draw.EllipseOutline 𝕩}˘ ellipseGrid
     font ← r.font.LoadRaylib@
+    out_title ← (⌽out_start ÷ 2‿1)
+    {white‿font‿fontSize r.draw.Text  out_title‿"Expected final output:"}
     {white DrawRectangleLines 𝕩}˘ out_lines
+    {white‿font‿fontSize r.draw.Text  (⌽aout_start - (spacing ÷ 2)‿0)‿"Current Data in selected node:"}
     {white DrawRectangleLines 𝕩}˘ aout_lines
     {white‿font‿fontSize r.draw.Text 𝕩}˘ out_txt
     aout_txt ← atext_pos FmtTxt (sw_id‿step_idx ⊑ out_grouped)
