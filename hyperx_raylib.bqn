@@ -1,4 +1,4 @@
-⟨⟨red, green, white, black⟩⇐color, raylib⟩←r←•Import "../rayed-bqn/rayed.bqn"
+⟨⟨red, yellow, green, white, black⟩⇐color, raylib⟩←r←•Import "../rayed-bqn/rayed.bqn"
 secs_per_step ← 3
 rec←20
 spacing ← 70
@@ -61,7 +61,9 @@ GenStageRots ← {(GenRot˜∘(𝕩⊸(⍉˜)))¨ axisRots}
 rot_res ← >GenStageRots¨ ⥊vars
 RevRot ← {(𝕨⊸⍉)˘ 𝕩}
 hop_table ← {(revRots {𝕨 {RevRot}¨ 𝕩}˘ 𝕩)}˘ rot_res
-hop_sw ← {{{((⊐⟜1)∘⥊)⎉2 𝕩}¨𝕩}˘ 𝕩}˘ hop_table
+HopIdToSw ← {{{((⊐⟜1)∘⥊)⎉2 𝕩}¨𝕩}˘ 𝕩}˘
+hop_sw ← HopIdToSw hop_table
+
 hop_comb ← ∾˘ hop_sw
 conn_mat ← (nsize↑/⁼)˘ hop_comb
 ut_mat ← <⌜˜↕nsize
@@ -142,7 +144,14 @@ DrawRectangleLines ← {r‿g‿b‿a𝕊x‿y‿wx‿wy:
 
 fontSize ← 20
 clock ← r.StartClock@
-
+one_row ← nsize⥊1
+MkColors ←{sw_id𝕊step_sw:
+    uls ← (link_mat) ∧ ((nsize-sw_id)⌽>nsize↑⋈one_row)
+    dls ← link_mat ∧ ⍉((nsize-sw_id)⌽>nsize↑⋈one_row)
+    colors ← link_mat {(𝕨<𝕩)⊑𝕨‿𝕩}¨ (2 × (uls ∨ dls))
+    cout ← colors {3⌾(𝕨⊸⊑) 𝕩}´ ⟨sw_id‿step_sw, step_sw‿sw_id⟩
+    (⊑⟜black‿red‿yellow‿green)¨ (⥊link_mat)/(⥊cout)
+}
 PerFrame ← {𝕤
     elapsedSecs ← ⌈clock.Time@
     secs_idx ←  duration | elapsedSecs
@@ -157,7 +166,8 @@ PerFrame ← {𝕤
     {white‿font‿fontSize r.draw.Text 𝕩}˘ out_txt
     aout_txt ← atext_pos FmtTxt (sw_id‿step_idx ⊑ out_grouped)
     {white‿font‿fontSize r.draw.Text 𝕩}˘ aout_txt
-    {raylib.DrawSplineBezierCubic 𝕩∾4∾2.0⋈red}˘ curves
+    sw_steps ← sw_id ∾ (∾´ (HopIdToSw (sw_id ⊏ (⍉(hop_reduce ∾ (hop_gather))))))
+    (sw_id MkColors (step_idx ⊑ sw_steps)) {raylib.DrawSplineBezierCubic 𝕩∾4∾2.0∾𝕨}˘ curves
 } r.draw._withCanvas⟜black
 
 PerFrame•_While_(¬r.window.ShouldClose)r.window._openAs "HyperX"
