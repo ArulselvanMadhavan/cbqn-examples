@@ -1,12 +1,22 @@
+
 # Table of Contents
 
-1.  [Install setup](#org34f7a5d)
-2.  [Run BQN](#orgb5c2808)
-3.  [Demo](#orgbe66c10)
-4.  [Numpy serialization](#org51ed815)
+1.  [About the project](#orgca6e345)
+2.  [Install setup](#org9832860)
+3.  [Run BQN](#org439b1f5)
+4.  [Demo](#orgc78c296)
+5.  [Numpy serialization](#org74eee53)
 
 
-<a id="org34f7a5d"></a>
+<a id="orgca6e345"></a>
+
+# About the project
+
+This project aims to visualize data movement involved in communication collectives.
+As a first step, it shows how an all-reduce algorithm might work in a 2D HyperX topology
+
+
+<a id="org9832860"></a>
 
 # Install setup
 
@@ -17,23 +27,23 @@
     make o3n CC=clang CXX=clang++ FFI=0
 
 
-<a id="orgb5c2808"></a>
+<a id="org439b1f5"></a>
 
 # Run BQN
 
     <path_to_cbqn_binary> hyperx_raylib.bqn
 
 
-<a id="orgbe66c10"></a>
+<a id="orgc78c296"></a>
 
 # Demo
 
-[![Watch the video](https://raw.githubusercontent.com/ArulselvanMadhavan/cclviz/main/media/all_reduce_thumbnail.png)](https://raw.githubusercontent.com/ArulselvanMadhavan/cclviz/main/media/all_reduce_viz_4x5.move)
+![img](./media/output.gif "Watch demo of all-reduce in a 2D hyperX")
 
-![Alt Text](https://raw.githubusercontent.com/ArulselvanMadhavan/cclviz/main/media/output.gif)
 
-<a id="org51ed815"></a>
+<a id="org74eee53"></a>
 
 # Numpy serialization
 
 -   BQN array to numpy serialization code was taken verbatim from <https://github.com/dlozeve/bqn-npy/tree/main>
+
