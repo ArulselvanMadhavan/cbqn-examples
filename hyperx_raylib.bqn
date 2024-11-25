@@ -4,7 +4,7 @@ rec←20
 spacing ← 70
 ctrlPtX ← 100
 ctrlPtY ← 100
-dims ← 5‿6
+dims ← 4‿5
 nd ← ≠dims
 nsize ← ×´dims
 mat ← nsize‿nsize

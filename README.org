@@ -8,7 +8,9 @@ make o3n CC=clang CXX=clang++ FFI=0
 #+end_src
 * Run BQN
 #+begin_src bash
-  ./BQN hello.bqn
+  <path_to_cbqn_binary> hyperx_raylib.bqn
 #+end_src
+* Demo
+[![Watch the video](https://raw.githubusercontent.com/ArulselvanMadhavan/cclviz/main/media/all_reduce_thumbnail.png)](https://raw.githubusercontent.com/ArulselvanMadhavan/cclviz/main/media/all_reduce_viz_4x5.mov)
 * Numpy serialization
 - BQN array to numpy serialization code was taken verbatim from https://github.com/dlozeve/bqn-npy/tree/main
