@@ -1,4 +1,3 @@
-
 # Table of Contents
 
 1.  [Install setup](#org34f7a5d)
@@ -29,11 +28,12 @@
 
 # Demo
 
-[![Watch the video](https://raw.githubusercontent.com/ArulselvanMadhavan/cclviz/main/media/all_reduce_thumbnail.png)](https://raw.githubusercontent.com/ArulselvanMadhavan/cclviz/main/media/all_reduce_viz_4x5.mov)
+[![Watch the video](https://raw.githubusercontent.com/ArulselvanMadhavan/cclviz/main/media/all_reduce_thumbnail.png)](https://raw.githubusercontent.com/ArulselvanMadhavan/cclviz/main/media/all_reduce_viz_4x5.move)
+
+![Alt Text](https://raw.githubusercontent.com/ArulselvanMadhavan/cclviz/main/media/output.gif)
 
 <a id="org51ed815"></a>
 
 # Numpy serialization
 
 -   BQN array to numpy serialization code was taken verbatim from <https://github.com/dlozeve/bqn-npy/tree/main>
-
